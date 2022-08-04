@@ -17,6 +17,22 @@ False ∨ b = b
 +-identity zero = refl
 +-identity (suc n) rewrite +-identity n = refl
 
++-identityʳ : ∀ (m : ℕ) → m + zero ≡ m
++-identityʳ zero =
+  begin
+    zero + zero
+  ≡⟨⟩
+    zero
+  ∎
++-identityʳ (suc m) =
+  begin
+    suc m + zero
+  ≡⟨⟩
+    suc (m + zero)
+  ≡⟨ cong suc (+-identityʳ m) ⟩
+    suc m
+  ∎
+
 +-suc : ∀ (m n : ℕ) → m + suc n ≡ suc (m + n)
 +-suc zero n = refl
 +-suc (suc m) n rewrite +-suc m n = refl
@@ -76,31 +92,28 @@ data Bin : Set where
 
 inc : Bin → Bin
 inc nil = x1 nil
-inc (x0 b) = x1 b
-inc (x1 b) = x0 inc b
+inc (x0 m) = x1 m
+inc (x1 m) = x0 inc m
 
 to : ℕ → Bin
-to zero = nil
+to zero = x0 nil
 to (suc n) = inc (to n)
 
 from : Bin → ℕ
-from nil = zero
-from (x0 b) = 2 * from b
-from (x1 b) = 1 + 2 * from b
+from nil = 0
+from (x0 n) = 2 * from n
+from (x1 n) = 1 + 2 * from n
 
-+-suc′ : ∀ (m n : ℕ) → m + suc n ≡ suc (m + n)
-+-suc′ zero n = refl
-+-suc′ (suc m) n rewrite +-suc′ m n = refl
+--  Exercise
 
 inc-suc : ∀ (x : Bin) → from (inc x) ≡ suc (from x)
 inc-suc nil = refl
 inc-suc (x0 x) = refl
-inc-suc (x1 x) rewrite
-    inc-suc x
-  | +-suc (suc (from x)) (from x + 0) = refl
+inc-suc (x1 x) rewrite inc-suc x | +-suc (suc (from x)) (from x + 0) = refl
+
+-- to (from x) ≡ x is false:
+--   to ( from (x0 x0 nil)) ≡ x0 nil != x0 x0 nil
 
 from-to : ∀ (n : ℕ) → from (to n) ≡ n
 from-to zero = refl
-from-to (suc n) rewrite
-    inc-suc (to n)
-  | from-to n = refl
+from-to (suc n) rewrite inc-suc (to n) | from-to n = refl
