@@ -13,7 +13,6 @@ sym refl = refl
 trans : ∀ {A : Set} {x y z : A}
   → x ≡ y
   → y ≡ z
-    -----
   → x ≡ z
 trans refl refl = refl
 
@@ -51,14 +50,12 @@ module ≡-Reasoning {A : Set} where
 
   _≡⟨⟩_ : ∀ (x : A) {y : A}
     → x ≡ y
-      -----
     → x ≡ y
   x ≡⟨⟩ x≡y = x≡y
 
   _≡⟨_⟩_ : ∀ (x : A) {y z : A}
     → x ≡ y
     → y ≡ z
-      -----
     → x ≡ z
   x ≡⟨ x≡y ⟩ y≡z = trans x≡y y≡z
 
