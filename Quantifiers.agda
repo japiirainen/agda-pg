@@ -38,3 +38,26 @@ open import Relations using (Can; One; to-from; to-can)
 -- B 1 B 2 C 1 C 2
 -- ---------------
 --  1   0   0   1
+
+data Tri : Set where
+  aa : Tri
+  bb : Tri
+  cc : Tri
+
+postulate
+  ∀-extensionality : ∀ {A : Set} {B : A → Set} {f g : (x : A) → B x}
+    → (∀ x → f x ≡ g x)
+    → f ≡ g
+
+
+∀-× : ∀ {B : Tri → Set}
+  → (∀ (x : Tri) → B x) ≃ (B aa × B bb × B cc)
+∀-× {B} =
+  record
+    { to = λ z → z aa , z bb , z cc
+    ; from = λ{ (a , b , c) → λ{ aa → a; bb → b; cc → c}}
+    ; from∘to = λ f →
+         ∀-extensionality λ{ aa → refl; bb → refl; cc → refl}
+    ; to∘from = λ{ (a , b , c) → refl}
+    }
+
