@@ -37,23 +37,35 @@ False ∨ b = b
 +-suc zero n = refl
 +-suc (suc m) n rewrite +-suc m n = refl
 
-+-commutativity : ∀ (m n : ℕ) → m + n ≡ n + m
-+-commutativity m zero rewrite +-identity m = refl
-+-commutativity m (suc n) rewrite +-suc m n | +-commutativity m n = refl
++-comm : ∀ (m n : ℕ) → m + n ≡ n + m
++-comm m zero rewrite +-identity m = refl
++-comm m (suc n) rewrite +-suc m n | +-comm m n = refl
 
-+-associativity : ∀ (m n p : ℕ) → (m + n) + p ≡ m + (n + p)
-+-associativity zero n p = refl
-+-associativity (suc m) n p rewrite +-associativity m n p = refl
++-assoc : ∀ (m n p : ℕ) → (m + n) + p ≡ m + (n + p)
++-assoc zero n p = refl
++-assoc (suc m) n p rewrite +-assoc m n p = refl
+
++-rearrange : ∀ (m n p q : ℕ) → (m + n) + (p + q) ≡ m + (n + p) + q
++-rearrange m n p q =
+  begin
+    (m + n) + (p + q)
+  ≡⟨ +-assoc m n (p + q) ⟩
+    m + (n + (p + q))
+  ≡⟨ cong (m +_) (sym (+-assoc n p q)) ⟩
+    m + ((n + p) + q)
+  ≡⟨ sym (+-assoc m (n + p) q) ⟩
+    (m + (n + p)) + q
+  ∎
 
 +-swap : ∀ (m n p : ℕ) → m + (n + p) ≡ n + (m + p)
 +-swap m n p =
   begin
     m + (n + p)
-  ≡⟨ sym (+-associativity m n p) ⟩
+  ≡⟨ sym (+-assoc m n p) ⟩
     m + n + p
-  ≡⟨ cong (_+ p) (+-commutativity m n) ⟩
+  ≡⟨ cong (_+ p) (+-comm m n) ⟩
     n + m + p
-  ≡⟨ +-associativity n m p ⟩
+  ≡⟨ +-assoc n m p ⟩
     n + (m + p)
   ∎
 
@@ -61,7 +73,7 @@ False ∨ b = b
 *-distributivity-+ zero n p = refl
 *-distributivity-+ (suc m) n p rewrite
     *-distributivity-+ m n p
-  | sym (+-associativity p (m * p) (n * p)) = refl
+  | sym (+-assoc p (m * p) (n * p)) = refl
 
 *-assoc : ∀ (m n p : ℕ) → (m * n) * p ≡ m * (n * p)
 *-assoc zero n p = refl

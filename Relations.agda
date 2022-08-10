@@ -4,15 +4,16 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; sym)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 open import Data.Nat.Properties using (+-comm; +-suc; *-comm)
-open import Inductions using (Bin;
-                              nil;
-                              x0_;
-                              x1_;
-                              inc;
-                              to;
-                              from;
-                              from-to;
-                              +-identityʳ)
+open import Inductions using
+  (Bin;
+   nil;
+   x0_;
+   x1_;
+   inc;
+   to;
+   from;
+   from-to;
+   +-identityʳ)
 
 data _≤_ : ℕ → ℕ → Set where
   z≤n : ∀ {n} → zero ≤ n

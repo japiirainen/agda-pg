@@ -1,9 +1,12 @@
 module Equality where
 
-data _≡_ {A : Set} (x : A) : A → Set where
-  refl : x ≡ x
+import Relation.Binary.PropositionalEquality as Eq
+open Eq using (_≡_; refl)
 
-infix 4 _≡_
+-- data _≡_ {A : Set} (x : A) : A → Set where
+--   refl : x ≡ x
+
+-- infix 4 _≡_
 
 sym : ∀ {A : Set} → {x y : A}
   → x ≡ y
@@ -220,8 +223,6 @@ data odd where
   odd-suc : ∀ {n : ℕ}
     → even n
     → odd (suc n)
-
-{-# BUILTIN EQUALITY _≡_ #-}
 
 even-comm : ∀ (m n : ℕ)
   → even (m + n)
