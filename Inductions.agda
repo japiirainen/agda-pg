@@ -69,16 +69,16 @@ False ∨ b = b
     n + (m + p)
   ∎
 
-*-distributivity-+ : ∀ (m n p : ℕ) → (m + n) * p ≡ m * p + n * p
-*-distributivity-+ zero n p = refl
-*-distributivity-+ (suc m) n p rewrite
-    *-distributivity-+ m n p
+*-distrib-+ : ∀ (m n p : ℕ) → (m + n) * p ≡ m * p + n * p
+*-distrib-+ zero n p = refl
+*-distrib-+ (suc m) n p rewrite
+    *-distrib-+ m n p
   | sym (+-assoc p (m * p) (n * p)) = refl
 
 *-assoc : ∀ (m n p : ℕ) → (m * n) * p ≡ m * (n * p)
 *-assoc zero n p = refl
 *-assoc (suc m) n p rewrite
-    *-distributivity-+ n (m * n) p
+    *-distrib-+ n (m * n) p
   | *-assoc m n p = refl
 
 *-zero : ∀ (m : ℕ) → m * 0 ≡ 0
@@ -93,9 +93,14 @@ False ∨ b = b
 *-comm m zero = *-zero m
 *-comm m (suc n) rewrite *-suc m n | *-comm m n = refl
 
-∸zero : ∀ (n : ℕ) → 0 ∸ n ≡ 0
-∸zero zero = refl
-∸zero (suc n) = refl
+∸-zero : ∀ (n : ℕ) → 0 ∸ n ≡ 0
+∸-zero zero = refl
+∸-zero (suc n) = refl
+
+∸-+-assoc : ∀ (m n p : ℕ) → m ∸ n ∸ p ≡ m ∸ (n + p)
+∸-+-assoc m zero p = refl
+∸-+-assoc zero (suc n) p rewrite ∸-zero p = refl
+∸-+-assoc (suc m) (suc n) p rewrite ∸-+-assoc m n p = refl
 
 data Bin : Set where
   nil : Bin
