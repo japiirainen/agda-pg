@@ -402,3 +402,326 @@ map-is-fold-Tree = extensionality lemma
     lemma {A} {B} {C} {D} {f} {g} (node lf x rt)
                                   rewrite lemma {A} {B} {C} {D} {f} {g} lf
                                 | lemma {A} {B} {C} {D} {f} {g} rt = refl
+
+record IsMonoid {A : Set} (_⊗_ : A → A → A) (e : A) : Set where
+  field
+    assoc : ∀ (x y z : A) → (x ⊗ y) ⊗ z ≡ x ⊗ (y ⊗ z)
+    identityˡ : ∀ (x : A) → e ⊗ x ≡ x
+    identityʳ : ∀ (x : A) → x ⊗ e ≡ x
+
+open IsMonoid
+
++-monoid : IsMonoid _+_ 0
++-monoid = 
+  record
+    { assoc = +-assoc
+    ; identityˡ = +-identityˡ
+    ; identityʳ = +-identityʳ
+    }
+
+-- *-monoid : IsMonoid _*_ 1
+-- *-monoid =
+--   record
+--     { assoc = *-assoc
+--     ; identityˡ = *-identityˡ
+--     ; identityʳ = *-identityʳ
+--     }
+
+*-monoid : IsMonoid _*_ 1
+assoc *-monoid = *-assoc
+identityˡ *-monoid = *-identityˡ
+identityʳ *-monoid = *-identityʳ
+
+++-monoid : ∀ {A : Set} → IsMonoid {List A} _++_ []
+++-monoid =
+  record
+    { assoc = ++-assoc
+    ; identityˡ = ++-identityˡ
+    ; identityʳ = ++-identityʳ
+    }
+
+foldr-monoid : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e →
+  ∀ (xs : List A) (y : A) → foldr _⊗_ y xs ≡ foldr _⊗_ e xs ⊗ y
+foldr-monoid _⊗_ e ⊗-monoid [] y =
+  begin
+    foldr _⊗_ y []
+  ≡⟨⟩
+    y
+  ≡⟨ sym (identityˡ ⊗-monoid y) ⟩
+    (e ⊗ y)
+  ≡⟨⟩
+    foldr _⊗_ e [] ⊗ y
+  ∎
+foldr-monoid _⊗_ e ⊗-monoid (x ∷ xs) y =
+  begin
+    foldr _⊗_ y (x ∷ xs)
+  ≡⟨⟩
+    x ⊗ (foldr _⊗_ y xs)
+  ≡⟨ cong (x ⊗_) (foldr-monoid _⊗_ e ⊗-monoid xs y) ⟩
+    x ⊗ (foldr _⊗_ e xs ⊗ y)
+  ≡⟨ sym (assoc ⊗-monoid x (foldr _⊗_ e xs) y) ⟩
+    (x ⊗ foldr _⊗_ e xs) ⊗ y
+  ≡⟨⟩
+    foldr _⊗_ e (x ∷ xs) ⊗ y
+  ∎
+
+foldr-monoid-++ : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e →
+  ∀ (xs ys : List A) → foldr _⊗_ e (xs ++ ys) ≡ foldr _⊗_ e xs ⊗ foldr _⊗_ e ys
+foldr-monoid-++ _⊗_ e monoid-⊗ xs ys =
+  begin
+    foldr _⊗_ e (xs ++ ys)
+  ≡⟨ foldr-++ _⊗_ e xs ys ⟩
+    foldr _⊗_ (foldr _⊗_ e ys) xs
+  ≡⟨ foldr-monoid _⊗_ e monoid-⊗ xs (foldr _⊗_ e ys) ⟩
+    foldr _⊗_ e xs ⊗ foldr _⊗_ e ys
+  ∎
+
+foldl : ∀ {A B : Set} → (B → A → B) → B → List A → B
+foldl _⊗_ b [] = b
+foldl _⊗_ b (x ∷ xs) = foldl _⊗_ (b ⊗ x) xs
+
+foldl-monoid : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e →
+  ∀ (xs : List A) (y : A) → y ⊗ foldl _⊗_ e xs ≡ foldl _⊗_ y xs
+foldl-monoid _⊗_ e ⊗-monoid [] y = identityʳ ⊗-monoid y
+foldl-monoid _⊗_ e ⊗-monoid (x ∷ xs) y
+    rewrite identityˡ ⊗-monoid x
+          | sym (foldl-monoid _⊗_ e ⊗-monoid xs x)
+          | sym (assoc ⊗-monoid y x (foldl _⊗_ e xs))
+           = foldl-monoid _⊗_ e ⊗-monoid xs (y ⊗ x)
+
+foldr-monoid-foldl : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) 
+  → IsMonoid _⊗_ e
+  → foldr _⊗_ e ≡ foldl _⊗_ e
+foldr-monoid-foldl _⊗_ e ⊗-monoid = extensionality (lemma _⊗_ e ⊗-monoid)
+  where
+    lemma : ∀ {A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid _⊗_ e
+      → ∀ (xs : List A)
+      → foldr _⊗_ e xs ≡ foldl _⊗_ e xs
+    lemma _⊗_ e ⊗-monoid [] = refl
+    lemma _⊗_ e ⊗-monoid (x ∷ xs)
+      rewrite lemma _⊗_ e ⊗-monoid xs
+            | foldl-monoid _⊗_ e ⊗-monoid xs x
+            | identityˡ ⊗-monoid x
+              = refl
+
+data All {A : Set} (P : A → Set) : List A → Set where
+  []  : All P []
+  _∷_ : ∀ {x : A} {xs : List A} → P x → All P xs → All P (x ∷ xs)
+
+_ : All (_≤ 2) [ 0 , 1 , 2 ]
+_ = z≤n ∷ s≤s z≤n ∷ s≤s (s≤s z≤n) ∷ []
+
+data Any {A : Set} (P : A → Set) : List A → Set where
+  here  : ∀ {x : A} {xs : List A} → P x → Any P (x ∷ xs)
+  there : ∀ {x : A} {xs : List A} → Any P xs → Any P (x ∷ xs)
+
+infix 4 _∈_ _∉_
+
+_∈_ : ∀ {A : Set} (x : A) (xs : List A) → Set
+x ∈ xs = Any (x ≡_) xs
+
+_∉_ : ∀ {A : Set} (x : A) (xs : List A) → Set
+x ∉ xs = ¬ (x ∈ xs)
+
+_ : 0 ∈ [ 0 , 1 , 2 , 3 ]
+_ = here refl
+
+_ : 0 ∈ [ 3 , 2 , 0 , 1 ]
+_ = there (there (here refl))
+
+not-in : 3 ∉ [ 0 , 1 , 0 , 2 ]
+not-in (there (there (there (here ()))))
+not-in (there (there (there (there ()))))
+
+All-++-⇔ : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+  All P (xs ++ ys) ⇔ (All P xs × All P ys)
+All-++-⇔ xs ys =
+  record
+    { to       =  to xs ys
+    ; from     =  from xs ys
+    }
+  where
+    to : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+      All P (xs ++ ys) → (All P xs × All P ys)
+    to [] ys Pys = ⟨ [] , Pys ⟩
+    to (x ∷ xs) ys (Px ∷ Pxs++ys) with to xs ys Pxs++ys
+    ... | ⟨ Pxs , Pys ⟩ = ⟨ Px ∷ Pxs , Pys ⟩
+
+    from : ∀ { A : Set} {P : A → Set} (xs ys : List A) →
+      All P xs × All P ys → All P (xs ++ ys)
+    from [] ys ⟨ [] , Pys ⟩ = Pys
+    from (x ∷ xs) ys ⟨ Px ∷ Pxs , Pys ⟩ =  Px ∷ from xs ys ⟨ Pxs , Pys ⟩
+
+Any-++-⇔ : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+  Any P (xs ++ ys) ⇔ (Any P xs ⊎ Any P ys)
+Any-++-⇔ xs ys =
+  record
+    { to = to xs ys
+    ; from = from xs ys
+    }
+  where
+    to : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+      Any P (xs ++ ys) → (Any P xs ⊎ Any P ys)
+    to [] ys anyp = inj₂ anyp
+    to (x ∷ xs) ys (here px) = inj₁ (here px)
+    to (x ∷ xs) ys (there anyp) with to xs ys anyp
+    ... | inj₁ anyx = inj₁ (there anyx)
+    ... | inj₂ anyy = inj₂ anyy
+
+    from : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+      (Any P xs ⊎ Any P ys) → Any P (xs ++ ys)
+    from _ _ (inj₁ (here ax)) = here ax
+    from (x ∷ xs) ys (inj₁ (there ax)) = there (from xs ys (inj₁ ax))
+    from [] ys (inj₂ y) = y
+    from (x ∷ xs) ys (inj₂ y) = there (from xs ys (inj₂ y))
+
+All-++-≃ : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+  All P (xs ++ ys) ≃ (All P xs × All P ys)
+All-++-≃ xs ys =
+  record
+    { to = to xs ys
+    ; from = from xs ys
+    ; from∘to = from∘to xs ys
+    ; to∘from = to∘from xs ys
+    }
+  where
+    to : ∀ {A : Set} {P : A → Set} (xs ys : List A) →
+      All P (xs ++ ys) → (All P xs × All P ys)
+    to [] ys Pys = ⟨ [] , Pys ⟩
+    to (x ∷ xs) ys (Px ∷ Pxs++ys) with to xs ys Pxs++ys
+    ... | ⟨ Pxs , Pys ⟩ = ⟨ Px ∷ Pxs , Pys ⟩
+
+    from : ∀ { A : Set} {P : A → Set} (xs ys : List A) →
+      All P xs × All P ys → All P (xs ++ ys)
+    from [] ys ⟨ [] , Pys ⟩ = Pys
+    from (x ∷ xs) ys ⟨ Px ∷ Pxs , Pys ⟩ =  Px ∷ from xs ys ⟨ Pxs , Pys ⟩
+
+    from∘to : ∀ {A : Set} {P : A → Set} (xs ys : List A) (x : All P (xs ++ ys))
+      → from xs ys (to xs ys x) ≡ x
+    from∘to [] ys x = refl
+    from∘to (x ∷ xs) ys (px ∷ allp) = cong (px ∷_) (from∘to xs ys allp)
+
+    to∘from : ∀ {A : Set} {P : A → Set} (xs ys : List A) (y : All P xs × All P ys)
+      → to xs ys (from xs ys y) ≡ y
+    to∘from [] ys ⟨ [] , snd ⟩ = refl
+    to∘from (x ∷ xs) ys ⟨ px ∷ fst , snd ⟩ rewrite to∘from xs ys ⟨ fst , snd ⟩ = refl
+
+_∘′_ : ∀ {ℓ₁ ℓ₂ ℓ₃ : Level} {A : Set ℓ₁} {B : Set ℓ₂} {C : Set ℓ₃}
+  → (B → C) → (A → B) → A → C
+(g ∘′ f) x  =  g (f x)
+
+¬Any≃All¬ : ∀ {A : Set} (P : A → Set) (xs : List A)
+  → (¬_ ∘′ Any P) xs ≃ All (¬_ ∘′ P) xs
+¬Any≃All¬ P xs =
+  record
+    { to = to P xs
+    ; from = from P xs
+    ; from∘to = from∘to P xs
+    ; to∘from = to∘from P xs
+    }
+
+  where
+
+    to : ∀ {A : Set} (P : A → Set) (xs : List A)
+      → (¬_ ∘′ Any P) xs → All (¬_ ∘′ P) xs
+    to _ [] _ = []
+    to P (x ∷ xs) ¬Any = (λ Px → ¬Any (here Px)) ∷ to P xs λ anyx → ¬Any (there anyx)
+
+    from : ∀ {A : Set} (P : A → Set) (xs : List A)
+      → All (¬_ ∘′ P) xs → (¬_ ∘′ Any P) xs
+    from P [] [] ()
+    from P (x ∷ xs) (¬Px ∷ All¬) (here Px) = ¬Px Px
+    from P (x ∷ xs) (¬Px ∷ All¬) (there anyp) = from P xs All¬ anyp
+
+    from∘to : ∀ {A : Set} (P : A → Set) (xs : List A) (x : (¬_ ∘′ Any P) xs)
+      → from P xs (to P xs x) ≡ x
+    from∘to P [] ¬Any = extensionality λ ()
+    from∘to P (x ∷ xs) ¬Any = extensionality
+      λ{ (here Px) → refl
+       ; (there anyp) → ⊥-elim (¬Any (there anyp))
+       }
+
+    to∘from : ∀ {A : Set} (P : A → Set) (xs : List A) (y : All (¬_ ∘′ P) xs)
+      → to P xs (from P xs y) ≡ y
+    to∘from P [] [] = refl
+    to∘from P (x ∷ xs) (¬Px ∷ All¬) = cong (¬Px ∷_) (to∘from P xs All¬)
+
+Any¬-implies-¬All : ∀ {A : Set} (P : A → Set) (xs : List A)
+  → Any (¬_ ∘′ P) xs → (¬_ ∘′ All P) xs
+Any¬-implies-¬All P (x ∷ xs) (here ¬Px) (Px ∷ allp) = ¬Px Px
+Any¬-implies-¬All P (x ∷ xs) (there Any¬) (Px ∷ allp) =
+  Any¬-implies-¬All P xs Any¬ allp
+
+all : ∀ {A : Set} → (A → Bool) → List A → Bool
+all p = foldr _∧_ true ∘ map p
+
+Decidable : ∀ {A : Set} → (A → Set) → Set
+Decidable {A} P = ∀ (x : A) → Dec (P x)
+
+All? : ∀ {A : Set} {P : A → Set} → Decidable P → Decidable (All P)
+All? P? []                                 = yes []
+All? P? (x ∷ xs) with P? x   | All? P? xs
+...                 | yes Px | yes Pxs     = yes (Px ∷ Pxs)
+...                 | no ¬Px | _           = no λ{ (Px ∷ Pxs) → ¬Px Px   }
+...                 | _      | no ¬Pxs     = no λ{ (Px ∷ Pxs) → ¬Pxs Pxs }
+
+any : ∀ {A : Set} → (A → Bool) → List A → Bool
+any p = foldr _∨_ false ∘ map p
+
+Any? : ∀ {A : Set} {P : A → Set} → Decidable P → Decidable (Any P)
+Any? P? [] = no λ ()
+Any? P? (x ∷ xs) with P? x | Any? P? xs 
+...                 | yes Px | _         = yes (here Px)
+...                 | _      | yes Pxs   = yes (there Pxs)
+...                 | no ¬Px | no ¬Pxs  = no λ { (here Px) → ¬Px Px
+                                               ; (there anyp) → ¬Pxs anyp 
+                                               }
+
+Any-∃ : ∀ {A : Set} (P : A → Set) (xs : List A)
+  → Any P xs ≃ ∃[ x ] (x ∈ xs × P x)
+Any-∃ {A} P xs =
+  record
+    { to = to xs
+    ; from = from xs
+    ; from∘to = from∘to xs
+    ; to∘from = to∘from xs
+    }
+
+  where
+
+    to : ∀ (xs : List A)
+      → Any P xs → ∃[ x ] (x ∈ xs × P x)
+    to (x ∷ xs) (here Px) = ⟨ x , ⟨ (here refl) , Px ⟩ ⟩
+    to (x ∷ xs) (there anyp) with to xs anyp
+    ... | ⟨ x′ , ⟨ x′∈xs , Px′ ⟩ ⟩ = ⟨ x′ , ⟨ (there x′∈xs) , Px′ ⟩ ⟩
+
+    from : ∀ (xs : List A)
+      → ∃[ x ] (x ∈ xs × P x) → Any P xs
+    from (x ∷ xs) ⟨ x′ , ⟨ here x′≡x , Px′ ⟩ ⟩ rewrite sym x′≡x = here Px′
+    from (x ∷ xs) ⟨ x′ , ⟨ there x′∈xs , Px′ ⟩ ⟩ =
+      there (from xs ⟨ x′ , ⟨ x′∈xs , Px′ ⟩ ⟩)
+
+    from∘to : ∀ (xs : List A) (x : Any P xs) → from xs (to xs x) ≡ x
+    from∘to (x ∷ xs) (here Px) = refl
+    from∘to (x ∷ xs) (there anyp) = cong there (from∘to xs anyp)
+
+    to∘from : ∀ (xs : List A) (y : ∃[ x ] (x ∈ xs × P x)) → to xs (from xs y) ≡ y
+    to∘from (x ∷ xs) ⟨ .x , ⟨ here refl , Px′ ⟩ ⟩ = refl
+    to∘from (x ∷ xs) ⟨ x′ , ⟨ there x′∈xs , Px′ ⟩ ⟩ =
+      cong (λ{ ⟨ x″ , ⟨ x″∈xs , Px″ ⟩ ⟩ → ⟨ x″ , ⟨ (there x″∈xs) , Px″ ⟩ ⟩})
+        (to∘from xs ⟨ x′ , ⟨ x′∈xs , Px′ ⟩ ⟩)
+
+filter? : ∀ {A : Set} {P : A → Set}
+  → (P? : Decidable P) → List A → ∃[ ys ]( All P ys )
+filter? P? [] = ⟨ [] , [] ⟩
+filter? P? (x ∷ xs) with P? x   | filter? P? xs
+...                    | yes Px | ⟨ ys , allys ⟩ = ⟨ x ∷ ys , Px ∷ allys ⟩
+...                    | no  _  | ∃ys            = ∃ys
+
+not? : (x : Bool) → Dec (x ≡ false)
+not? false = yes refl
+not? true = no λ ()
+
+_ : filter? not? [ true , false , true , true , false ]
+  ≡ ⟨ [ false , false ] , refl ∷ refl ∷ [] ⟩
+_ = refl
