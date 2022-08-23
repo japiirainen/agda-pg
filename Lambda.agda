@@ -18,6 +18,7 @@ infixl 7  _∙_
 infix  8  `suc_
 infix  9  `_
 
+
 data Term : Set where
   `_                      :  Id → Term
   ƛ_⇒_                    :  Id → Term → Term

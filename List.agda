@@ -12,7 +12,6 @@ _!!!_ : ∀ {A} → List A → Nat → Maybe A
 (_ ∷ xs) !!! (suc n) = xs !!! n
 (x ∷ _)  !!! zero    = just x
 
-
 data ListOfLength (A : Set) : Nat → Set where
   [] : ListOfLength A 0
   _∷_ : ∀ {n} → A → ListOfLength A n → ListOfLength A (suc n)

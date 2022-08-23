@@ -62,7 +62,6 @@ data TExpr : Ty → Set where
   bit            : Bool → TExpr bool
   _+E_           : TExpr nat → TExpr nat → TExpr nat
   ifE_then_else_ : ∀ {t} → TExpr bool → TExpr t → TExpr t → TExpr t
-  
 
 te1 : TExpr nat
 te1 = num 7 +E num 3 +E num 10
