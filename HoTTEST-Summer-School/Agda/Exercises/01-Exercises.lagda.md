@@ -98,7 +98,9 @@ max (suc n) (suc m) = suc (max n m)
 
 ```agda
 min : ℕ → ℕ → ℕ
-min = λ _ z → z
+min zero _ = zero
+min _ zero = zero
+min (suc n) (suc m) = suc (min n m)
 
 min-example : min 5 3 ≡ 3
 min-example = refl 3 -- refl 3 should fill the hole here
@@ -115,10 +117,11 @@ element of the list `xs` and returns the resulting list.
 
 ```agda
 map : {X Y : Type} → (X → Y) → List X → List Y
-map f xs = []
+map f [] = []
+map f (x :: xs) = f x :: map f xs
 
 map-example : map (_+ 3) (1 :: 2 :: 3 :: []) ≡ 4 :: 5 :: 6 :: []
-map-example = {!!} -- refl _ should fill the hole here
+map-example = refl _ -- refl _ should fill the hole here
 
                    -- We write the underscore, because we don't wish to repeat
                    -- the relatively long "4 :: 5 :: 6 :: []" and Agda can
@@ -135,14 +138,15 @@ should return [4 , 3 , 1], see the code below.
 
 ```agda
 filter : {X : Type} (p : X → Bool) → List X → List X
-filter = λ p z → z
+filter p [] = []
+filter p (x :: xs) = if p x then x :: filter p xs else filter p xs
 
 is-non-zero : ℕ → Bool
 is-non-zero zero    = false
 is-non-zero (suc _) = true
 
 filter-example : filter is-non-zero (4 :: 3 :: 0 :: 1 :: 0 :: []) ≡ 4 :: 3 :: 1 :: []
-filter-example = {!!} -- refl _ should fill the hole here
+filter-example = refl _ -- refl _ should fill the hole here
 ```
 
 ## Part II: The identity type of the Booleans (★/★★)
@@ -157,7 +161,10 @@ are the same natural number, or else is empty, if `x` and `y` are different.
 
 ```agda
 _≣_ : Bool → Bool → Type
-a ≣ b = {!!}
+true  ≣ true  = 𝟙
+true  ≣ false = 𝟘
+false ≣ true  = 𝟘
+false ≣ false = 𝟙
 ```
 
 ### Exercise 2 (★)
@@ -165,8 +172,8 @@ a ≣ b = {!!}
 **Show** that for every Boolean `b` we can find an element of the type `b ≣ b`.
 
 ```agda
-Bool-refl : (b : Bool) → b ≣ b
-Bool-refl = {!!}
+-- Bool-refl : (b : Bool) → b ≣ b
+-- Bool-refl b = {!!}
 ```
 
 ### Exercise 3 (★★)
@@ -182,8 +189,8 @@ back and forth between `a ≣ b` and `a ≡ b`.
 ≡-to-≣ : (a b : Bool) → a ≡ b → a ≣ b
 ≡-to-≣ = {!!}
 
-≣-to-≡ : (a b : Bool) → a ≣ b → a ≡ b
-≣-to-≡ = λ a b z → z
+-- ≣-to-≡ : (a b : Bool) → a ≣ b → a ≡ b
+-- ≣-to-≡ = λ a b z → z
 ```
 
 ## Part III: Proving in Agda (★★/★★★)
@@ -278,7 +285,7 @@ Try to **prove** these equations using pattern matching and inductive proofs.
 map-id : {X : Type} (xs : List X) → map id xs ≡ xs
 map-id xs = {!!}
 
-map-comp : {X Y Z : Type} (f : X → Y) (g : Y → Z)
-           (xs : List X) → map (g ∘ f) xs ≡ map g (map f xs)
-map-comp f g xs = refl []
+-- map-comp : {X Y Z : Type} (f : X → Y) (g : Y → Z)
+--            (xs : List X) → map (g ∘ f) xs ≡ map g (map f xs)
+-- map-comp f g xs = refl []
 ```
