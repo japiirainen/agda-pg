@@ -419,14 +419,6 @@ open IsMonoid
     ; identityʳ = +-identityʳ
     }
 
--- *-monoid : IsMonoid _*_ 1
--- *-monoid =
---   record
---     { assoc = *-assoc
---     ; identityˡ = *-identityˡ
---     ; identityʳ = *-identityʳ
---     }
-
 *-monoid : IsMonoid _*_ 1
 assoc *-monoid = *-assoc
 identityˡ *-monoid = *-identityˡ
