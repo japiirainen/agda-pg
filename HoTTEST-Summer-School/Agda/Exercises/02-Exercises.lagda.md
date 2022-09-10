@@ -178,5 +178,5 @@ Prove that
 
 ```agda
 decidable-equality-char : (A : Type) → has-decidable-equality A ⇔ has-bool-dec-fct A
-decidable-equality-char = ?
+decidable-equality-char = {!!}
 ```
