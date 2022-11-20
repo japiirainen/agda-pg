@@ -30,9 +30,7 @@ homotopy2 = (loop ∙ ! loop) ∙ loop ≡⟨ ! (∙assoc loop (! loop) loop) �
 
 For fun, here's the proof they're the same.  The above proofs work for
 any path p, so we can generalize the goal and then do path induction.
-in practice, it would be better to define homotopy1 and homotopy2 for
-a general p in the first place and then instantiate them to loop so
-that you don't need to copy and paste their definitions into the goal
+in practice, it would be better to define homotopy1 and homotopy2 for a general p in the first place and then instantiate them to loop so that you don't need to copy and paste their definitions into the goal
 here, but I think it's helpful to be concrete when first practicing
 these path algebra steps.
 

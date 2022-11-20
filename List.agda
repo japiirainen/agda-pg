@@ -23,3 +23,9 @@ data Nat< : Nat → Set where
 _!!_ : ∀ {A n} → ListOfLength A n → Nat< n → A
 (x ∷ _) !! zero  = x
 (_ ∷ xs) !! suc n = xs !! n
+
+
+-- α
+-- Def Innerproduct ≡ (Insert +)∘(ApplyToAll x)∘Transpose
+-- Def IP ≡ (/+)∘(αx)∘Trans.
+-- ÷ ⊥ → λ ∧ ∨ ̸ ¬

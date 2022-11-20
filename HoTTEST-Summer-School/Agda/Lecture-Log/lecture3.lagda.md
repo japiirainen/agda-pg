@@ -100,6 +100,11 @@ _⁻¹ = sym
 
 infix  40 _⁻¹
 
+_≤_ : ℕ → ℕ → 𝓤
+zero ≤ n      = 𝟙
+suc a ≤ zero  = 𝟘
+suc a ≤ suc b = a ≤ b
+
 -- The (sub)type of prime numbers
 
 ℙ : 𝓤₀
@@ -170,7 +175,7 @@ record Mon' : 𝓤 (lsuc i) where
   _·_            : carrier → carrier → carrier
   left-unit-law  : (x : carrier) → x · 𝟏 ≡ x
   right-unit-law : (x : carrier) → 𝟏 · x ≡ x
-  assoc-law      : (x y z : carrier) → (x · (y · z)) ≡ ((x · y) · z)
+  assoc-law      : (x y z : carrier) → x · (y · z) ≡ (x · y) · z
 
 α : Mon {i} → Mon' {i}
 α (X , X-is-set , 𝟏 , _·_ , l , r , a) = mon X X-is-set 𝟏 _·_ l r a
@@ -199,17 +204,15 @@ false ≣ true  = 𝟘
 false ≣ false = 𝟙
 
 ≡-gives-≣ : {x y : Bool} → x ≡ y → x ≣ y
-≡-gives-≣ (refl true)  = ⋆
+≡-gives-≣ (refl true) = ⋆
 ≡-gives-≣ (refl false) = ⋆
 
 false-is-not-true : ¬ (false ≡ true)
-false-is-not-true p = II
+false-is-not-true p = lemma
  where
-  I : false ≣ true
-  I = ≡-gives-≣ p
+   lemma : 𝟘
+   lemma = ≡-gives-≣ p
 
-  II : 𝟘
-  II = I
 
 false-is-not-true' : ¬ (false ≡ true)
 false-is-not-true' = ≡-gives-≣
