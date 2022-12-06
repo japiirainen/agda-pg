@@ -1,0 +1,4 @@
+name: aoc
+include: src
+depend: standard-library
+flags: --guardedness
